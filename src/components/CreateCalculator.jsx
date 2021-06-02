@@ -18,19 +18,19 @@ const Description = styled.div`
     font-size:.8em;
     box-sizing:border-box;
 `;
+
+function enquote(text) {
+	console.log(text.split(new RegExp(/[^-\w_\.]/, 'i')).filter(function (el) {return el != ""}));
+	return JSON.stringify(text.split(new RegExp(/[^-\w_\.]/, 'i')).filter(function (el) {return el != ""}));
+}
+
 export default ({}) => {
     const location = useLocation();
     const [selected, setSelected] = useState(-1);
     const [calculatorName, setCalculatorName] = useState("");
     const [inputs, setInputs] = useState("");
-    const [codeText, setCodeText] = useState(
-`// Example code, that sums all of the inputs
-
-const result = input_array.reduce((prev, curr) => 
-    prev + parseInt(curr)
-, 0);
-resolve(result);`);
-
+	const [weights, setWeights] = useState("");
+	const [maxes, setMaxes] = useState("");
     return <MiddleCardWrapper>
         <MiddleCard>
             <Title>Create new calculator</Title>
@@ -42,31 +42,35 @@ resolve(result);`);
                 onBlur={() => {setSelected(-1)}}
             ></InputField>
             <InputField
-                input_name={"Inputs"}
+                input_name={"Inputs (ex. 1.dn 2.dn 3.dn 4-6.dn kolokvij)"}
                 selected={selected == 1}
                 setSelected={() => setSelected(1)}
-                onChange={new_text => setInputs(new_text)}
+                onChange={new_text => setInputs(enquote(new_text))}
                 onBlur={() => {setSelected(-1)}}
             ></InputField>
-            <Description>Here you can write input names in tics, sepparated by commas, example <code style={{borderBottom:`1px solid black`}}>"item1", "item2"</code></Description>
-            <CodeField
-                input_name={"Calculator code"}
-                selected={selected == 2}
-                setSelected={() => setSelected(2)}
-                onChange={new_text => setCodeText(new_text)}
-                onBlur={() => {setSelected(-1)}}
-                paddingCode={[`new Promise((resolve, reject) => {`, `</div>`]}
-                initialValue={codeText}
-            ></CodeField>
-            <Description>Whatever gets passed in the <code>resolve</code> function, will get returned as the result</Description>
-            <Description>You can access the inputs from the <code>input_array</code> array.<br />Example <code>input_array</code>: <code>["answer 1", "answer 2"]</code></Description>
+			<InputField
+				input_name={'Maximums (ex. ["4", "5", "5", "24", "100"])'}
+				selected={selected == 2}
+				setSelected={() => setSelected(2)}
+				onChange={new_text => setMaxes(enquote(new_text))}
+				onBlur={() => {setSelected(-1)}}
+			></InputField>
+			<InputField
+				input_name={"Weights (ex. 17.5, 17.5, 25, 40)"}
+				selected={selected == 3}
+				setSelected={() => setSelected(3)}
+				onChange={new_text => setWeights(enquote(new_text))}
+				onBlur={() => {setSelected(-1)}}
+			></InputField>
             <CalculateButton execute_function={
                 () => new Promise((res, rej) => {
-                    const inputs_array_string = encodeURIComponent(`[${inputs}]`);
+					// TODO: check that inputs and weights have the same length
+                    const inputs_array_string = encodeURIComponent(`${inputs}`);
+					const weights_array_string = encodeURIComponent(`${weights}`);
+					const maximums_array_string = encodeURIComponent(`${maxes}`);
                     const title = encodeURIComponent(calculatorName);
-                    const code_1 = encodeURIComponent(codeText)
 
-                    const relative_link = `#/calculator?title=${title}&inputs=${inputs_array_string}&code=${code_1}`;
+                    const relative_link = `#/calculator?title=${title}&inputs=${inputs_array_string}&weights=${weights_array_string}&maximums=${maximums_array_string}`;
 
                     res(<a href={relative_link}>Generated link</a>)
                 })
